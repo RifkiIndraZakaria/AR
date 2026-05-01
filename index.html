@@ -6,13 +6,15 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <meta
-      name="description"
-      content="Aplikasi WebXR AR berbasis Three.js dengan QR Code untuk akses mobile."
-    />
-    <meta name="theme-color" content="#0d1117" />
-    <title>WebXR AR Custom Asset</title>
+    <meta name="description" content="Petualangan WebXR AR Seru untuk Anak!" />
+    <meta name="theme-color" content="#87CEEB" />
+    <title>Petualangan AR Seru! ✨</title>
     <link rel="stylesheet" href="style.css" />
+    <!-- Menambahkan font ceria dari Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap"
+      rel="stylesheet"
+    />
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
       defer
@@ -28,42 +30,43 @@
   </head>
   <body>
     <main id="app">
-      <!-- Desktop: tampilkan QR code -->
+      <!-- Desktop: tampilkan QR code dengan bahasa santai -->
       <section id="desktopPanel" class="desktop-panel" hidden>
         <div class="qr-card">
-          <h1>WebXR AR</h1>
+          <h1>Main AR Yuk! 🦖</h1>
           <div
             id="qrCode"
             class="qr-code"
             aria-label="QR Code URL halaman ini"
           ></div>
-          <p>Scan QR ini menggunakan HP Anda untuk memulai AR</p>
+          <p>Minta tolong Ayah atau Bunda untuk scan kotak ini pakai HP ya!</p>
           <a
             id="pageLink"
             class="page-link"
             href="#"
             target="_blank"
             rel="noopener"
-            >Buka URL halaman</a
+            >Atau klik di sini</a
           >
         </div>
       </section>
 
-      <!-- Mobile: tampilkan tombol Start AR dalam card tersendiri -->
+      <!-- Mobile: tampilkan tombol Start AR yang lucu -->
       <section id="mobilePanel" class="mobile-panel" hidden>
         <div class="mobile-card">
-          <h1>WebXR AR</h1>
+          <h1>Dunia AR! 🌟</h1>
           <button id="startArButton" class="start-button" type="button">
-            Start AR
+            Mulai Main! 🚀
           </button>
           <p id="statusText" class="status-text" role="status">
-            Memuat asset AR...
+            Tunggu sebentar ya, lagi siap-siap...
           </p>
         </div>
       </section>
 
+      <!-- Overlay AR dengan instruksi ceria -->
       <div id="arOverlay" class="ar-overlay" hidden>
-        <p id="instructionText">Arahkan kamera ke bidang datar</p>
+        <p id="instructionText">Arahkan kameramu ke meja atau lantai ya! 📸</p>
       </div>
     </main>
 
