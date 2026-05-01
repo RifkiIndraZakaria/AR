@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # WebXR AR Three.js
 
 Aplikasi Augmented Reality berbasis WebXR dan Three.js yang bisa langsung di-host sebagai static site di GitHub Pages.
@@ -35,3 +36,6 @@ WebXR AR membutuhkan HTTPS. GitHub Pages sudah menyediakan HTTPS, jadi gunakan U
 - AR WebXR paling umum berjalan di Chrome Android pada perangkat yang mendukung ARCore.
 - iPhone Safari belum mendukung WebXR immersive AR seperti alur ini.
 - Jika audio belum tersedia di `AUDIO_PATH`, aplikasi tetap berjalan tanpa audio.
+=======
+tes
+>>>>>>> f151946264c4fd419ae521eafa27d5b202a18a1c
