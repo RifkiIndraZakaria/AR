@@ -272,6 +272,10 @@ async function startArSession() {
 
   try {
     startArButton.disabled = true;
+    mobilePanel.hidden = true;
+    desktopPanel.hidden = true;
+    document.body.classList.add("is-ar-starting");
+
     xrSession = await navigator.xr.requestSession("immersive-ar", {
       requiredFeatures: ["hit-test"],
       optionalFeatures: ["dom-overlay", "local-floor", "anchors"],
@@ -281,13 +285,17 @@ async function startArSession() {
     xrSession.addEventListener("end", onSessionEnded);
     await renderer.xr.setSession(xrSession);
 
-    mobilePanel.hidden = true;
+    document.body.classList.remove("is-ar-starting");
+    document.body.classList.add("is-ar-presenting");
     arOverlay.hidden = false;
     instructionText.textContent = "Arahkan kamera ke bidang datar";
     canPlaceObject = true;
     objectPlaced = false;
   } catch (error) {
     console.error(error);
+    document.body.classList.remove("is-ar-starting", "is-ar-presenting");
+    mobilePanel.hidden = !isMobileDevice;
+    desktopPanel.hidden = isMobileDevice;
     startArButton.disabled = false;
     setStatus(
       "Gagal memulai AR. Pastikan halaman dibuka lewat HTTPS dan izin kamera diberikan.",
@@ -303,6 +311,8 @@ function onSessionEnded() {
   objectPlaced = false;
   reticle.visible = false;
   arOverlay.hidden = true;
+  document.body.classList.remove("is-ar-starting", "is-ar-presenting");
+  desktopPanel.hidden = isMobileDevice;
   mobilePanel.hidden = !isMobileDevice;
   startArButton.disabled = false;
 }

@@ -27,6 +27,10 @@ button {
   font: inherit;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 #app {
   position: relative;
   width: 100%;
@@ -51,6 +55,13 @@ canvas {
   display: grid;
   place-items: center;
   padding: 24px;
+}
+
+body.is-ar-starting .desktop-panel,
+body.is-ar-starting .mobile-panel,
+body.is-ar-presenting .desktop-panel,
+body.is-ar-presenting .mobile-panel {
+  display: none !important;
 }
 
 .qr-card {
