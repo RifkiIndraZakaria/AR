@@ -77,6 +77,17 @@ canvas {
   line-height: 1.5;
 }
 
+.page-link {
+  display: inline-block;
+  max-width: 100%;
+  margin-top: 14px;
+  color: #7ee787;
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
 .qr-code {
   display: grid;
   place-items: center;
@@ -86,6 +97,7 @@ canvas {
   padding: 12px;
   border-radius: 8px;
   background: #ffffff;
+  color: #0d1117;
 }
 
 .qr-code img,

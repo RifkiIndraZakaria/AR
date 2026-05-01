@@ -1,5 +1,5 @@
-const MODEL_PATH = "./assets/Kid.glb";
-const AUDIO_PATH = "./assets/audio.mp3";
+const MODEL_PATH = "assets/Kid.glb";
+const AUDIO_PATH = "assets/audio.mp3";
 
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
@@ -7,6 +7,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 const desktopPanel = document.getElementById("desktopPanel");
 const mobilePanel = document.getElementById("mobilePanel");
 const qrCodeContainer = document.getElementById("qrCode");
+const pageLink = document.getElementById("pageLink");
 const startArButton = document.getElementById("startArButton");
 const statusText = document.getElementById("statusText");
 const arOverlay = document.getElementById("arOverlay");
@@ -42,6 +43,10 @@ initThree();
 loadAssets();
 
 function initPage() {
+  const currentUrl = getShareablePageUrl();
+  pageLink.href = currentUrl;
+  pageLink.textContent = currentUrl;
+
   if (isMobileDevice) {
     mobilePanel.hidden = false;
     desktopPanel.hidden = true;
@@ -55,8 +60,14 @@ function initPage() {
 function generateQrWhenReady() {
   const makeQr = () => {
     qrCodeContainer.innerHTML = "";
+
+    if (!window.QRCode) {
+      qrCodeContainer.textContent = "QR library gagal dimuat. Gunakan link di bawah.";
+      return;
+    }
+
     new QRCode(qrCodeContainer, {
-      text: window.location.href,
+      text: getShareablePageUrl(),
       width: 216,
       height: 216,
       colorDark: "#0d1117",
@@ -241,6 +252,13 @@ function loadAudio() {
 }
 
 async function startArSession() {
+  if (!window.isSecureContext) {
+    setStatus(
+      "WebXR membutuhkan HTTPS. GitHub Pages sudah HTTPS, jadi gunakan URL Pages saat testing di HP.",
+    );
+    return;
+  }
+
   if (!navigator.xr) {
     setStatus("WebXR tidak tersedia di browser ini.");
     return;
@@ -471,6 +489,12 @@ function getTouchDistance(touches) {
 
 function setStatus(message) {
   statusText.textContent = message;
+}
+
+function getShareablePageUrl() {
+  const url = new URL(window.location.href);
+  url.hash = "";
+  return url.href;
 }
 
 function onWindowResize() {
