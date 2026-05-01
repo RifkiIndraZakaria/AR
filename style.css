@@ -47,6 +47,7 @@ canvas {
   touch-action: none;
 }
 
+/* ── Panel base: always grid, visibility controlled by [hidden] attr ── */
 .desktop-panel,
 .mobile-panel {
   position: fixed;
@@ -57,6 +58,7 @@ canvas {
   padding: 24px;
 }
 
+/* Hide panels during AR */
 body.is-ar-starting .desktop-panel,
 body.is-ar-starting .mobile-panel,
 body.is-ar-presenting .desktop-panel,
@@ -64,6 +66,7 @@ body.is-ar-presenting .mobile-panel {
   display: none !important;
 }
 
+/* ── Desktop QR Card ── */
 .qr-card {
   width: min(420px, calc(100vw - 48px));
   padding: 28px;
@@ -118,22 +121,51 @@ body.is-ar-presenting .mobile-panel {
   height: 216px;
 }
 
+/* ── Mobile Panel ── */
 .mobile-panel {
   align-content: center;
   gap: 16px;
 }
 
+/* Mobile card wrapper — contained, no overflow */
+.mobile-card {
+  width: min(420px, calc(100vw - 48px));
+  padding: 36px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(13, 17, 23, 0.88);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.mobile-card h1 {
+  margin: 0;
+  font-size: clamp(2rem, 8vw, 3.4rem);
+  line-height: 1;
+}
+
 .start-button {
-  min-width: min(260px, calc(100vw - 48px));
+  width: 100%;
   min-height: 56px;
   padding: 0 28px;
   border: 0;
   border-radius: 8px;
   background: #2ea043;
   color: #ffffff;
+  font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0;
   box-shadow: 0 16px 40px rgba(46, 160, 67, 0.24);
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.start-button:hover:not(:disabled) {
+  background: #3fb950;
 }
 
 .start-button:disabled {
@@ -143,6 +175,15 @@ body.is-ar-presenting .mobile-panel {
   box-shadow: none;
 }
 
+.status-text {
+  margin: 0;
+  color: #8b949e;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  max-width: 100%;
+}
+
+/* ── AR Overlay ── */
 .ar-overlay {
   position: fixed;
   top: max(18px, env(safe-area-inset-top));
@@ -169,10 +210,5 @@ body.is-ar-presenting .mobile-panel {
 @media (max-width: 480px) {
   .qr-card {
     padding: 22px;
-  }
-
-  .status-text {
-    max-width: min(320px, calc(100vw - 48px));
-    text-align: center;
   }
 }

@@ -62,7 +62,8 @@ function generateQrWhenReady() {
     qrCodeContainer.innerHTML = "";
 
     if (!window.QRCode) {
-      qrCodeContainer.textContent = "QR library gagal dimuat. Gunakan link di bawah.";
+      qrCodeContainer.textContent =
+        "QR library gagal dimuat. Gunakan link di bawah.";
       return;
     }
 
