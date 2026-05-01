@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>WebXR AR Custom Asset</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <main id="app">
+    <section id="desktopPanel" class="desktop-panel" hidden>
+      <div class="qr-card">
+        <h1>WebXR AR</h1>
+        <div id="qrCode" class="qr-code" aria-label="QR Code URL halaman ini"></div>
+        <p>Scan QR ini menggunakan HP Anda untuk memulai AR</p>
+      </div>
+    </section>
+
+    <section id="mobilePanel" class="mobile-panel" hidden>
+      <button id="startArButton" class="start-button" type="button">
+        Start AR
+      </button>
+      <p id="statusText" class="status-text" role="status">Memuat asset AR...</p>
+    </section>
+
+    <div id="arOverlay" class="ar-overlay" hidden>
+      <p id="instructionText">Arahkan kamera ke bidang datar</p>
+    </div>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #0d1117;
+  color: #f6f8fa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(34, 197, 94, 0.22), transparent 30%),
+    linear-gradient(145deg, #101820 0%, #0d1117 52%, #14121f 100%);
+}
+
+button {
+  font: inherit;
+}
+
+#app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+}
+
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.desktop-panel,
+.mobile-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.qr-card {
+  width: min(420px, calc(100vw - 48px));
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(13, 17, 23, 0.84);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+  text-align: center;
+}
+
+.qr-card h1 {
+  margin: 0 0 20px;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1;
+}
+
+.qr-card p,
+.status-text {
+  margin: 18px 0 0;
+  color: #c9d1d9;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.qr-code {
+  display: grid;
+  place-items: center;
+  width: 240px;
+  height: 240px;
+  margin: 0 auto;
+  padding: 12px;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.qr-code img,
+.qr-code canvas {
+  position: static;
+  width: 216px;
+  height: 216px;
+}
+
+.mobile-panel {
+  align-content: center;
+  gap: 16px;
+}
+
+.start-button {
+  min-width: min(260px, calc(100vw - 48px));
+  min-height: 56px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 8px;
+  background: #2ea043;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0;
+  box-shadow: 0 16px 40px rgba(46, 160, 67, 0.24);
+}
+
+.start-button:disabled {
+  cursor: not-allowed;
+  background: #30363d;
+  color: #8b949e;
+  box-shadow: none;
+}
+
+.ar-overlay {
+  position: fixed;
+  top: max(18px, env(safe-area-inset-top));
+  left: 50%;
+  z-index: 5;
+  width: min(420px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.ar-overlay p {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(13, 17, 23, 0.72);
+  color: #ffffff;
+  font-size: 0.98rem;
+  line-height: 1.35;
+  text-align: center;
+  backdrop-filter: blur(14px);
+}
+
+@media (max-width: 480px) {
+  .qr-card {
+    padding: 22px;
+  }
+
+  .status-text {
+    max-width: min(320px, calc(100vw - 48px));
+    text-align: center;
+  }
+}
