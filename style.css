@@ -66,10 +66,8 @@ body.is-ar-presenting .mobile-block {
   display: none !important;
 }
 
-.content-wrapper {
-  text-align: center;
-  max-width: 1200px;
-  width: 100%;
+.desktop-panel .content-wrapper {
+  max-width: 1200px; /* Memberikan ruang lebar agar Grid bisa bekerja */
 }
 
 /* ── Desktop QR Code ── */
