@@ -61,11 +61,8 @@ canvas {
 body.is-ar-starting .desktop-panel,
 body.is-ar-starting .mobile-panel,
 body.is-ar-presenting .desktop-panel,
-}
 body.is-ar-starting .mobile-block,
 body.is-ar-presenting .mobile-block {
-  display: none !important;
-body.is-ar-presenting .mobile-panel {
   display: none !important;
 }
 
