@@ -1,32 +1,25 @@
 :root {
-  /* Menggunakan font Nunito yang membulat dan ramah anak */
   font-family:
-    "Nunito",
+    "Inter",
     system-ui,
     -apple-system,
     sans-serif;
-  color: #334155;
+  color: #1e293b;
+  background-color: #f8fafc;
 }
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html,
 body {
   width: 100%;
   height: 100%;
-  margin: 0;
   overflow: hidden;
-}
-
-/* Background ceria gradasi langit biru dan rumput hijau */
-body {
-  background: linear-gradient(180deg, #87ceeb 0%, #e0f6ff 60%, #b4e197 100%);
-}
-
-button {
-  font: inherit;
+  -webkit-font-smoothing: antialiased;
 }
 
 [hidden] {
@@ -49,18 +42,22 @@ canvas {
   touch-action: none;
 }
 
-/* ── Panel base: always grid, visibility controlled by [hidden] attr ── */
+/* ── Panels ── */
 .desktop-panel,
 .mobile-panel {
   position: fixed;
   inset: 0;
   z-index: 2;
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 24px;
+  background: rgba(248, 250, 252, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-/* Hide panels during AR */
+/* Menyembunyikan panel saat AR berjalan */
 body.is-ar-starting .desktop-panel,
 body.is-ar-starting .mobile-panel,
 body.is-ar-presenting .desktop-panel,
@@ -68,172 +65,82 @@ body.is-ar-presenting .mobile-panel {
   display: none !important;
 }
 
-/* ── Desktop QR Card yang seperti mainan ── */
-.qr-card {
-  width: min(420px, calc(100vw - 48px));
-  padding: 32px;
-  border: 6px solid #ffffff;
-  border-radius: 32px;
-  background: #fff9e6;
-  box-shadow: 0 16px 40px rgba(0, 150, 200, 0.2);
+.content-wrapper {
   text-align: center;
+  max-width: 400px;
+  width: 100%;
 }
 
-.qr-card h1 {
-  margin: 0 0 16px;
-  color: #ff6b6b;
-  font-size: clamp(2rem, 6vw, 2.8rem);
-  font-weight: 900;
-  line-height: 1.2;
-}
-
-.qr-card p,
-.status-text {
-  margin: 18px 0 0;
-  color: #475569;
-  font-size: 1.1rem;
+/* ── Desktop QR Code ── */
+.desktop-panel h2 {
+  font-size: 1.5rem;
   font-weight: 600;
-  line-height: 1.5;
-}
-
-.page-link {
-  display: inline-block;
-  max-width: 100%;
-  margin-top: 16px;
-  color: #00b4d8;
-  font-size: 1rem;
-  font-weight: 800;
-  overflow-wrap: anywhere;
-  text-decoration-thickness: 3px;
-  text-underline-offset: 4px;
+  margin-bottom: 24px;
 }
 
 .qr-code {
-  display: grid;
-  place-items: center;
-  width: 240px;
-  height: 240px;
-  margin: 0 auto;
+  display: inline-flex;
   padding: 16px;
-  border-radius: 20px;
   background: #ffffff;
-  border: 4px dashed #ffd166;
+  border-radius: 16px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
 }
 
-.qr-code img,
-.qr-code canvas {
-  position: static;
-  width: 200px;
-  height: 200px;
+.page-link {
+  display: block;
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: color 0.2s;
 }
 
-/* ── Mobile Panel ── */
+.page-link:hover {
+  color: #2563eb;
+}
+
+/* ── Mobile Panel (Tap to Start) ── */
 .mobile-panel {
-  align-content: center;
-  gap: 16px;
+  cursor: pointer; /* Memberikan indikasi bahwa layar bisa di-tap */
 }
 
-/* Mobile card wrapper */
-.mobile-card {
-  width: min(420px, calc(100vw - 48px));
-  padding: 40px 28px;
-  border: 6px solid #ffffff;
-  border-radius: 36px;
-  background: #fff9e6;
-  box-shadow: 0 16px 40px rgba(0, 150, 200, 0.25);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-  text-align: center;
+.minimal-prompt h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
 }
 
-.mobile-card h1 {
-  margin: 0;
-  color: #ff6b6b;
-  font-size: clamp(2.2rem, 8vw, 3.2rem);
-  font-weight: 900;
-  line-height: 1;
-}
-
-/* Tombol raksasa yang empuk untuk anak-anak */
-.start-button {
-  width: 100%;
-  min-height: 70px;
-  padding: 0 28px;
-  border: 4px solid #e63946;
-  border-radius: 35px;
-  background: #ff4d6d;
-  color: #ffffff;
-  font-size: 1.4rem;
-  font-weight: 900;
-  letter-spacing: 1px;
-  box-shadow:
-    0 8px 0 #e63946,
-    0 16px 20px rgba(255, 77, 109, 0.4);
-  cursor: pointer;
-  transition: all 0.15s ease-in-out;
-}
-
-.start-button:hover:not(:disabled) {
-  background: #ff5e7e;
-  transform: translateY(-2px);
-  box-shadow:
-    0 10px 0 #e63946,
-    0 20px 25px rgba(255, 77, 109, 0.5);
-}
-
-.start-button:active:not(:disabled) {
-  transform: translateY(8px);
-  box-shadow:
-    0 0 0 #e63946,
-    0 5px 10px rgba(255, 77, 109, 0.3);
-}
-
-.start-button:disabled {
-  cursor: not-allowed;
-  background: #cbd5e1;
-  border-color: #94a3b8;
-  color: #ffffff;
-  box-shadow: 0 8px 0 #94a3b8;
-  transform: translateY(0);
-}
-
-.status-text {
-  margin: 0;
+.minimal-prompt p {
   color: #64748b;
   font-size: 1rem;
   line-height: 1.5;
-  max-width: 100%;
 }
 
-/* ── AR Overlay dengan bentuk seperti awan/gelembung ── */
+/* ── AR Overlay ── */
 .ar-overlay {
   position: fixed;
-  top: max(24px, env(safe-area-inset-top));
+  bottom: max(32px, env(safe-area-inset-bottom));
   left: 50%;
   z-index: 5;
-  width: min(380px, calc(100vw - 32px));
+  width: max-content;
+  max-width: calc(100vw - 48px);
   transform: translateX(-50%);
   pointer-events: none;
 }
 
 .ar-overlay p {
-  margin: 0;
-  padding: 16px 20px;
-  border: 4px solid #ffd166;
-  border-radius: 30px;
-  background: rgba(255, 255, 255, 0.95);
-  color: #334155;
-  font-size: 1.1rem;
-  font-weight: 800;
-  line-height: 1.4;
+  padding: 12px 24px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #ffffff;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  font-weight: 400;
   text-align: center;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-@media (max-width: 480px) {
-  .qr-card {
-    padding: 24px;
-  }
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
