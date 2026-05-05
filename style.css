@@ -61,6 +61,10 @@ canvas {
 body.is-ar-starting .desktop-panel,
 body.is-ar-starting .mobile-panel,
 body.is-ar-presenting .desktop-panel,
+}
+body.is-ar-starting .mobile-block,
+body.is-ar-presenting .mobile-block {
+  display: none !important;
 body.is-ar-presenting .mobile-panel {
   display: none !important;
 }
@@ -76,6 +80,18 @@ body.is-ar-presenting .mobile-panel {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 24px;
+}
+.mobile-block {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: rgba(248, 250, 252, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .qr-list {

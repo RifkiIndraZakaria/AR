@@ -80,6 +80,7 @@ const startArButton = document.getElementById("mobilePanel");
 const statusText = document.getElementById("statusText");
 const arOverlay = document.getElementById("arOverlay");
 const instructionText = document.getElementById("instructionText");
+const mobileBlocked = document.getElementById("mobileBlocked");
 
 const isMobileDevice =
   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -110,13 +111,46 @@ initPage();
 initThree();
 loadAssets();
 
+function hasQrAccess() {
+  try {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("via_qr") === "1") return true;
+    if (url.searchParams.has("target")) return true;
+    if (sessionStorage.getItem("qr_scanned") === "1") return true;
+  } catch (e) {
+    // ignore
+  }
+  return false;
+}
+
+function cleanUrlParams() {
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("via_qr");
+    // keep target param so selection still works
+    window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+  } catch (e) {
+    // ignore
+  }
+}
+
 function initPage() {
   if (isMobileDevice) {
-    mobilePanel.hidden = false;
-    desktopPanel.hidden = true;
+    if (hasQrAccess()) {
+      sessionStorage.setItem("qr_scanned", "1");
+      mobilePanel.hidden = false;
+      desktopPanel.hidden = true;
+      if (mobileBlocked) mobileBlocked.hidden = true;
+      cleanUrlParams();
+    } else {
+      mobilePanel.hidden = true;
+      desktopPanel.hidden = true;
+      if (mobileBlocked) mobileBlocked.hidden = false;
+    }
   } else {
     desktopPanel.hidden = false;
     mobilePanel.hidden = true;
+    if (mobileBlocked) mobileBlocked.hidden = true;
     generateQrWhenReady();
   }
 }
@@ -135,11 +169,11 @@ function generateQrWhenReady() {
       label.className = "qr-label";
       label.textContent = t.title;
 
-      const shareUrl =
-        getShareablePageUrl() +
-        (getShareablePageUrl().includes("?") ? "&" : "?") +
-        "target=" +
-        encodeURIComponent(t.id);
+      const _base = getShareablePageUrl();
+      const _url = new URL(_base);
+      _url.searchParams.set("target", t.id);
+      _url.searchParams.set("via_qr", "1");
+      const shareUrl = _url.href;
 
       const openLink = document.createElement("a");
       openLink.href = shareUrl;
