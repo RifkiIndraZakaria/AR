@@ -91,13 +91,30 @@ body.is-ar-presenting .mobile-block {
   -webkit-backdrop-filter: blur(8px);
 }
 
+/* Penataan kontainer daftar QR */
 .qr-list {
   display: grid;
+  /* Membuat kolom responsif: lebar minimal 220px, otomatis menyesuaikan ruang layar */
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  justify-items: center;
-  align-items: start;
-  margin-bottom: 12px;
+  gap: 24px; /* Jarak antar kotak QR Code */
+  justify-content: center;
+  align-items: stretch;
+  padding: 20px 0;
+  width: 100%;
+  max-width: 1200px; /* Mencegah baris terlalu panjang pada monitor besar */
+  margin: 0 auto; /* Menengahkan kontainer */
+}
+
+/* Opsional: Membuat tampilan masing-masing item QR lebih rapi seperti kartu */
+.qr-list > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9; /* Warna latar belakang ringan */
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Efek bayangan halus */
 }
 
 .qr-item {
