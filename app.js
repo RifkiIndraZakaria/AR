@@ -1,12 +1,52 @@
-const MODEL_PATH = "assets/Kid.glb";
-const AUDIO_PATH = "assets/audio.mp3";
-
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
+const TARGETS = [
+  {
+    id: "kid",
+    title: "Kid",
+    model: "assets/Kid.glb",
+    audio: "assets/audio.mp3",
+  },
+  { id: "cat", title: "Cat", model: "assets/Cat.glb", audio: "assets/cat.mp3" },
+  {
+    id: "rocket",
+    title: "Rocket",
+    model: "assets/Rocket.glb",
+    audio: "assets/rocket.mp3",
+  },
+];
+
+function getSelectedTargetIdFromUrl() {
+  try {
+    const url = new URL(window.location.href);
+    const param = url.searchParams.get("target");
+    if (param) return param;
+    if (url.hash) {
+      const hash = url.hash.replace(/^#/, "");
+      if (hash.includes("=")) {
+        const qp = new URLSearchParams(hash);
+        return qp.get("target");
+      }
+      return hash;
+    }
+  } catch (e) {
+    // ignore
+  }
+  return null;
+}
+
+const selectedTargetId = getSelectedTargetIdFromUrl();
+const selectedTarget =
+  TARGETS.find((t) => t.id === selectedTargetId) || TARGETS[0];
+
+const MODEL_PATH = selectedTarget.model;
+const AUDIO_PATH = selectedTarget.audio;
+
 const desktopPanel = document.getElementById("desktopPanel");
 const mobilePanel = document.getElementById("mobilePanel");
-const qrCodeContainer = document.getElementById("qrCode");
+const qrListContainer =
+  document.getElementById("qrList") || document.getElementById("qrCode");
 const startArButton = document.getElementById("mobilePanel");
 const statusText = document.getElementById("statusText");
 const arOverlay = document.getElementById("arOverlay");
@@ -53,27 +93,78 @@ function initPage() {
 }
 
 function generateQrWhenReady() {
-  const makeQr = () => {
-    qrCodeContainer.innerHTML = "";
-    new QRCode(qrCodeContainer, {
-      text: getShareablePageUrl(),
-      width: 216,
-      height: 216,
-      colorDark: "#0d1117",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H,
+  const makeAll = () => {
+    qrListContainer.innerHTML = "";
+    TARGETS.forEach((t) => {
+      const item = document.createElement("div");
+      item.className = "qr-item";
+
+      const qrBox = document.createElement("div");
+      qrBox.className = "qr";
+
+      const label = document.createElement("div");
+      label.className = "qr-label";
+      label.textContent = t.title;
+
+      const shareUrl =
+        getShareablePageUrl() +
+        (getShareablePageUrl().includes("?") ? "&" : "?") +
+        "target=" +
+        encodeURIComponent(t.id);
+
+      const openLink = document.createElement("a");
+      openLink.href = shareUrl;
+      openLink.target = "_blank";
+      openLink.rel = "noopener";
+      openLink.className = "qr-open";
+      openLink.textContent = "Buka di HP";
+
+      const dl = document.createElement("a");
+      dl.href = "#";
+      dl.className = "qr-download";
+      dl.textContent = "Unduh PNG";
+
+      item.appendChild(qrBox);
+      item.appendChild(label);
+      item.appendChild(openLink);
+      item.appendChild(dl);
+      qrListContainer.appendChild(item);
+
+      if (window.QRCode) {
+        new QRCode(qrBox, {
+          text: shareUrl,
+          width: 216,
+          height: 216,
+          colorDark: "#0d1117",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H,
+        });
+
+        // bind download after a short delay so QR is rendered
+        setTimeout(() => {
+          const img = qrBox.querySelector("img");
+          const canvas = qrBox.querySelector("canvas");
+          const dataUrl = img ? img.src : canvas ? canvas.toDataURL() : null;
+          if (dataUrl) {
+            dl.href = dataUrl;
+            dl.download = `${t.id}.png`;
+          } else {
+            dl.style.display = "none";
+          }
+        }, 150);
+      }
     });
   };
 
   if (window.QRCode) {
-    makeQr();
+    makeAll();
     return;
   }
 
   const interval = setInterval(() => {
     if (window.QRCode) {
       clearInterval(interval);
-      makeQr();
+      makeAll();
     }
   }, 100);
 
@@ -81,7 +172,8 @@ function generateQrWhenReady() {
   setTimeout(() => {
     clearInterval(interval);
     if (!window.QRCode) {
-      qrCodeContainer.textContent = "QR gagal dimuat. Buka URL ini di HP Anda.";
+      qrListContainer.textContent =
+        "QR gagal dimuat. Pastikan koneksi internet.";
     }
   }, 10000);
 }
@@ -182,8 +274,8 @@ async function loadAssets() {
 
   startArButton.disabled = false;
   statusText.textContent = audioBuffer
-    ? "Siap memulai AR."
-    : "Siap memulai AR. Audio belum tersedia di path konfigurasi.";
+    ? `Siap memulai AR. (${selectedTarget.title})`
+    : `Siap memulai AR. (${selectedTarget.title}) Audio belum tersedia.`;
 }
 
 function loadModel() {
@@ -223,8 +315,68 @@ function normalizeModelSize(model) {
 }
 
 function createFallbackModel() {
-  const group = new THREE.Group();
+  return createFallbackModelForId(selectedTarget.id);
+}
 
+function createFallbackModelForId(id) {
+  const group = new THREE.Group();
+  id = id || "kid";
+
+  if (id === "cat") {
+    const body = new THREE.Mesh(
+      new THREE.SphereGeometry(0.22, 32, 32),
+      new THREE.MeshStandardMaterial({ color: 0xffb4c1, roughness: 0.5 }),
+    );
+    body.position.y = 0.22;
+
+    const earL = new THREE.Mesh(
+      new THREE.ConeGeometry(0.06, 0.12, 8),
+      new THREE.MeshStandardMaterial({ color: 0xffb4c1, roughness: 0.5 }),
+    );
+    earL.position.set(-0.12, 0.38, 0.05);
+    earL.rotation.z = 0.4;
+
+    const earR = earL.clone();
+    earR.position.x = 0.12;
+
+    const base = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.26, 0.26, 0.02, 32),
+      new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.6 }),
+    );
+    base.position.y = 0.01;
+
+    group.add(base, body, earL, earR);
+    return group;
+  }
+
+  if (id === "rocket") {
+    const body = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.08, 0.12, 0.6, 24),
+      new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.4 }),
+    );
+    body.position.y = 0.32;
+
+    const nose = new THREE.Mesh(
+      new THREE.ConeGeometry(0.12, 0.2, 24),
+      new THREE.MeshStandardMaterial({ color: 0xfff59e, roughness: 0.4 }),
+    );
+    nose.position.y = 0.65;
+
+    const finL = new THREE.Mesh(
+      new THREE.BoxGeometry(0.02, 0.12, 0.06),
+      new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.5 }),
+    );
+    finL.position.set(-0.09, 0.12, 0.08);
+    finL.rotation.z = 0.3;
+
+    const finR = finL.clone();
+    finR.position.x = 0.09;
+
+    group.add(body, nose, finL, finR);
+    return group;
+  }
+
+  // default: kid-like box
   const body = new THREE.Mesh(
     new THREE.BoxGeometry(0.35, 0.35, 0.35),
     new THREE.MeshStandardMaterial({
@@ -388,19 +540,50 @@ function placeObjectAtReticle() {
 }
 
 function playAudio() {
-  if (!audioBuffer) {
+  if (audioBuffer) {
+    if (sound && sound.isPlaying) {
+      sound.stop();
+    }
+
+    sound = new THREE.Audio(listener);
+    sound.setBuffer(audioBuffer);
+    sound.setLoop(false);
+    sound.setVolume(1);
+    sound.play();
     return;
   }
 
-  if (sound && sound.isPlaying) {
-    sound.stop();
-  }
+  // Fallback: synthesize a short tone if no audio file is available
+  try {
+    const ctx = listener.context;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
 
-  sound = new THREE.Audio(listener);
-  sound.setBuffer(audioBuffer);
-  sound.setLoop(false);
-  sound.setVolume(1);
-  sound.play();
+    const freqMap = { kid: 440, cat: 660, rocket: 220 };
+    osc.type = "sine";
+    osc.frequency.value = freqMap[selectedTarget.id] || 440;
+
+    gain.gain.value = 0.0001;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.02);
+    osc.start(now);
+    osc.stop(now + 1.0);
+
+    sound = {
+      stop: () => {
+        try {
+          osc.stop();
+        } catch (e) {
+          /* ignore */
+        }
+      },
+    };
+  } catch (e) {
+    console.warn("Synth audio failed:", e);
+  }
 }
 
 function onTouchStart(event) {

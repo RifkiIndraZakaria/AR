@@ -78,6 +78,52 @@ body.is-ar-presenting .mobile-panel {
   margin-bottom: 24px;
 }
 
+.qr-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  justify-items: center;
+  align-items: start;
+  margin-bottom: 12px;
+}
+
+.qr-item {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(2, 6, 23, 0.06);
+  width: 240px;
+  text-align: center;
+}
+
+.qr-item .qr {
+  width: 216px;
+  height: 216px;
+  margin: 0 auto 10px auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #0f172a;
+}
+
+.qr-open,
+.qr-download {
+  display: inline-block;
+  margin: 6px 8px 0 8px;
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.qr-download {
+  color: #059669;
+}
+
 .qr-code {
   display: inline-flex;
   padding: 16px;
