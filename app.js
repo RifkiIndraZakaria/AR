@@ -304,34 +304,7 @@ async function startArSession() {
   }
 }
 
-function cleanupScene() {
-  // Stop & destroy audio
-  if (sound) {
-    if (sound.isPlaying) sound.stop();
-    sound.disconnect();
-    sound = null;
-  }
-
-  // Remove placed model from scene and dispose resources
-  if (placedModel) {
-    scene.remove(placedModel);
-    placedModel.traverse((child) => {
-      if (child.isMesh) {
-        child.geometry?.dispose();
-        if (Array.isArray(child.material)) {
-          child.material.forEach((m) => m.dispose());
-        } else {
-          child.material?.dispose();
-        }
-      }
-    });
-    placedModel = null;
-  }
-}
-
 function onSessionEnded() {
-  cleanupScene();
-
   xrSession = null;
   hitTestSource = null;
   hitTestSourceRequested = false;
