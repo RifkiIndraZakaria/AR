@@ -3,17 +3,46 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 const TARGETS = [
   {
-    id: "kid",
-    title: "Kid",
+    id: "kidTest",
+    title: "Tes Ekspresi",
     model: "assets/Kid.glb",
     audio: "assets/audio.mp3",
   },
-  { id: "cat", title: "Cat", model: "assets/Cat.glb", audio: "assets/cat.mp3" },
   {
-    id: "rocket",
-    title: "Rocket",
-    model: "assets/Rocket.glb",
-    audio: "assets/rocket.mp3",
+    id: "kidAngry",
+    title: "Ekspresi Marah",
+    model: "assets/KidAngry.glb",
+    audio: "assets/audio.mp3",
+  },
+  {
+    id: "kidCalm",
+    title: "Ekspresi Tenang",
+    model: "assets/KidCalm.glb",
+    audio: "assets/audio.mp3",
+  },
+  {
+    id: "kidHappy",
+    title: "Ekspresi Senang",
+    model: "assets/KidHappy.glb",
+    audio: "assets/audio.mp3",
+  },
+  {
+    id: "kidSad",
+    title: "Ekspresi Sedih",
+    model: "assets/KidSad.glb",
+    audio: "assets/audio.mp3",
+  },
+  {
+    id: "kidScared",
+    title: "Ekspresi Takut",
+    model: "assets/KidScared.glb",
+    audio: "assets/audio.mp3",
+  },
+  {
+    id: "kidWorry",
+    title: "Ekspresi Khawatir",
+    model: "assets/KidWorry.glb",
+    audio: "assets/audio.mp3",
   },
 ];
 
