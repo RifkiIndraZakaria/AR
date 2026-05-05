@@ -7,7 +7,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 const desktopPanel = document.getElementById("desktopPanel");
 const mobilePanel = document.getElementById("mobilePanel");
 const qrCodeContainer = document.getElementById("qrCode");
-const pageLink = document.getElementById("pageLink");
 const startArButton = document.getElementById("mobilePanel");
 const statusText = document.getElementById("statusText");
 const arOverlay = document.getElementById("arOverlay");
@@ -43,10 +42,6 @@ initThree();
 loadAssets();
 
 function initPage() {
-  const currentUrl = getShareablePageUrl();
-  pageLink.href = currentUrl;
-  pageLink.textContent = currentUrl;
-
   if (isMobileDevice) {
     mobilePanel.hidden = false;
     desktopPanel.hidden = true;
@@ -60,13 +55,6 @@ function initPage() {
 function generateQrWhenReady() {
   const makeQr = () => {
     qrCodeContainer.innerHTML = "";
-
-    if (!window.QRCode) {
-      qrCodeContainer.textContent =
-        "QR library gagal dimuat. Gunakan link di bawah.";
-      return;
-    }
-
     new QRCode(qrCodeContainer, {
       text: getShareablePageUrl(),
       width: 216,
@@ -82,7 +70,20 @@ function generateQrWhenReady() {
     return;
   }
 
-  window.addEventListener("load", makeQr, { once: true });
+  const interval = setInterval(() => {
+    if (window.QRCode) {
+      clearInterval(interval);
+      makeQr();
+    }
+  }, 100);
+
+  // Timeout 10 detik jika CDN gagal
+  setTimeout(() => {
+    clearInterval(interval);
+    if (!window.QRCode) {
+      qrCodeContainer.textContent = "QR gagal dimuat. Buka URL ini di HP Anda.";
+    }
+  }, 10000);
 }
 
 function initThree() {
@@ -304,34 +305,7 @@ async function startArSession() {
   }
 }
 
-function cleanupScene() {
-  // Stop & destroy audio
-  if (sound) {
-    if (sound.isPlaying) sound.stop();
-    sound.disconnect();
-    sound = null;
-  }
-
-  // Remove placed model from scene and dispose resources
-  if (placedModel) {
-    scene.remove(placedModel);
-    placedModel.traverse((child) => {
-      if (child.isMesh) {
-        child.geometry?.dispose();
-        if (Array.isArray(child.material)) {
-          child.material.forEach((m) => m.dispose());
-        } else {
-          child.material?.dispose();
-        }
-      }
-    });
-    placedModel = null;
-  }
-}
-
 function onSessionEnded() {
-  cleanupScene();
-
   xrSession = null;
   hitTestSource = null;
   hitTestSourceRequested = false;
