@@ -106,6 +106,7 @@ let canPlaceObject = true;
 let objectPlaced = false;
 let oneFingerDrag = null;
 let twoFingerPinch = null;
+let historyStateAdded = false;
 
 initPage();
 initThree();
@@ -131,6 +132,55 @@ function cleanUrlParams() {
     window.history.replaceState({}, "", url.pathname + url.search + url.hash);
   } catch (e) {
     // ignore
+  }
+}
+
+function stopAudio() {
+  if (!sound) return;
+  try {
+    if (typeof sound.stop === "function") {
+      sound.stop();
+    } else if (sound.isPlaying && typeof sound.stop === "function") {
+      sound.stop();
+    } else if (typeof sound.disconnect === "function") {
+      sound.disconnect();
+    }
+  } catch (e) {
+    // ignore
+  }
+  sound = null;
+}
+
+function removePlacedObject() {
+  if (placedModel) {
+    try {
+      scene.remove(placedModel);
+    } catch (e) {
+      // ignore
+    }
+    placedModel = null;
+  }
+
+  objectPlaced = false;
+  canPlaceObject = true;
+  if (reticle) reticle.visible = true;
+  if (arOverlay) arOverlay.hidden = false;
+  stopAudio();
+  setStatus("Objek dihapus.");
+}
+
+function onPopState(e) {
+  // Only intercept if we previously added a history entry for AR
+  if (!historyStateAdded) return;
+
+  if (objectPlaced) {
+    // First back press: remove placed object and reset audio, keep user on page
+    removePlacedObject();
+    try {
+      history.pushState({ inAr: true }, "", window.location.href);
+    } catch (err) {
+      // ignore
+    }
   }
 }
 
@@ -502,6 +552,15 @@ async function startArSession() {
     xrSession.addEventListener("end", onSessionEnded);
     await renderer.xr.setSession(xrSession);
 
+    try {
+      if (window.history && typeof history.pushState === "function") {
+        history.pushState({ inAr: true }, "", window.location.href);
+        historyStateAdded = true;
+      }
+    } catch (e) {
+      // ignore
+    }
+
     document.body.classList.remove("is-ar-starting");
     document.body.classList.add("is-ar-presenting");
     arOverlay.hidden = false;
@@ -760,3 +819,6 @@ function onWindowResize() {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
+
+// Register popstate handler to catch physical back button on mobile
+window.addEventListener("popstate", onPopState);
