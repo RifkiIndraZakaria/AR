@@ -12,37 +12,37 @@ const TARGETS = [
     id: "kidAngry",
     title: "Ekspresi Marah",
     model: "assets/KidAngry.glb",
-    audio: "assets/audio.mp3",
+    audio: "assets/KidAngry.mp3",
   },
   {
     id: "kidCalm",
     title: "Ekspresi Tenang",
     model: "assets/KidCalm.glb",
-    audio: "assets/audio.mp3",
+    audio: "assets/KidCalm.mp3",
   },
   {
     id: "kidHappy",
     title: "Ekspresi Senang",
     model: "assets/KidHappy.glb",
-    audio: "assets/audio.mp3",
+    audio: "assets/KidHappy.mp3",
   },
   {
     id: "kidSad",
     title: "Ekspresi Sedih",
     model: "assets/KidSad.glb",
-    audio: "assets/audio.mp3",
+    audio: "assets/KidSad.mp3",
   },
   {
     id: "kidScared",
     title: "Ekspresi Takut",
     model: "assets/KidScared.glb",
-    audio: "assets/audio.mp3",
+    audio: "assets/KidScared.mp3",
   },
   {
     id: "kidWorry",
     title: "Ekspresi Khawatir",
     model: "assets/KidWorry.glb",
-    audio: "assets/audio.mp3",
+    audio: "assets/KidWorry.mp3",
   },
 ];
 
@@ -843,7 +843,9 @@ function initToolbar() {
 
   // Share QR
   arShareQr.addEventListener("click", showQrModal);
-  qrModalClose.addEventListener("click", () => { qrModal.hidden = true; });
+  qrModalClose.addEventListener("click", () => {
+    qrModal.hidden = true;
+  });
   qrModal.addEventListener("click", (e) => {
     if (e.target === qrModal) qrModal.hidden = true;
   });
@@ -864,7 +866,12 @@ function showObjectMode() {
     objRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     objRenderer.setSize(window.innerWidth, window.innerHeight);
 
-    objCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 100);
+    objCamera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.01,
+      100,
+    );
     objCamera.position.set(0, 0.3, 1.4);
 
     objScene = new THREE.Scene();
@@ -886,8 +893,12 @@ function showObjectMode() {
   }
 
   // Touch controls untuk object viewer
-  objectCanvas.addEventListener("touchstart", onObjTouchStart, { passive: false });
-  objectCanvas.addEventListener("touchmove", onObjTouchMove, { passive: false });
+  objectCanvas.addEventListener("touchstart", onObjTouchStart, {
+    passive: false,
+  });
+  objectCanvas.addEventListener("touchmove", onObjTouchMove, {
+    passive: false,
+  });
   objectCanvas.addEventListener("touchend", onObjTouchEnd, { passive: false });
 
   // Start render loop
