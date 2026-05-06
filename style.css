@@ -57,25 +57,6 @@ canvas {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Menyembunyikan panel saat AR berjalan */
-body.is-ar-starting .desktop-panel,
-body.is-ar-starting .mobile-panel,
-body.is-ar-presenting .desktop-panel,
-body.is-ar-starting .mobile-block,
-body.is-ar-presenting .mobile-block {
-  display: none !important;
-}
-
-.desktop-panel .content-wrapper {
-  max-width: 1200px; /* Memberikan ruang lebar agar Grid bisa bekerja */
-}
-
-/* ── Desktop QR Code ── */
-.desktop-panel h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 24px;
-}
 .mobile-block {
   position: fixed;
   inset: 0;
@@ -89,18 +70,44 @@ body.is-ar-presenting .mobile-block {
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* Penataan kontainer daftar QR */
+/* Menyembunyikan panel saat AR berjalan */
+body.is-ar-starting .desktop-panel,
+body.is-ar-starting .mobile-panel,
+body.is-ar-presenting .desktop-panel,
+body.is-ar-starting .mobile-block,
+body.is-ar-presenting .mobile-block {
+  display: none !important;
+}
+
+.content-wrapper {
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+/* Perbaikan 1: Memberikan ruang lebar di desktop agar Grid QR Code tidak menumpuk */
+.desktop-panel .content-wrapper {
+  max-width: 1200px;
+}
+
+/* ── Desktop QR Code ── */
+.desktop-panel h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+/* Penataan kontainer daftar QR dengan Grid */
 .qr-list {
   display: grid;
-  /* Membuat kolom responsif: lebar minimal 220px, otomatis menyesuaikan ruang layar */
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 24px; /* Jarak antar kotak QR Code */
+  gap: 24px;
   justify-content: center;
   align-items: stretch;
   padding: 20px 0;
   width: 100%;
-  max-width: 1200px; /* Mencegah baris terlalu panjang pada monitor besar */
-  margin: 0 auto; /* Menengahkan kontainer */
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .qr-item {
@@ -110,6 +117,7 @@ body.is-ar-presenting .mobile-block {
   box-shadow: 0 6px 12px rgba(2, 6, 23, 0.06);
   width: 240px;
   text-align: center;
+  margin: 0 auto; /* Menjaga item tetap di tengah pada kolomnya */
 }
 
 .qr-item .qr {
@@ -166,7 +174,7 @@ body.is-ar-presenting .mobile-block {
 
 /* ── Mobile Panel (Tap to Start) ── */
 .mobile-panel {
-  cursor: pointer; /* Memberikan indikasi bahwa layar bisa di-tap */
+  cursor: pointer;
 }
 
 .minimal-prompt h1 {
@@ -337,10 +345,27 @@ body.is-ar-presenting .mobile-block {
   margin-bottom: 16px;
   color: #0f172a;
 }
+
+/* Perbaikan 2: Menjaga proporsi QR Code di dalam Modal (Anti-Stretch) */
 .qr-modal-box {
   display: inline-flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 14px;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 12px;
 }
+
+.qr-modal-box img,
+.qr-modal-box canvas {
+  display: block;
+  width: 100% !important;
+  max-width: 200px;
+  height: auto !important;
+  object-fit: contain;
+}
+
 .qr-modal-url {
   font-size: 0.72rem;
   color: #64748b;
