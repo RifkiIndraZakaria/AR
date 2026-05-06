@@ -81,6 +81,17 @@ const statusText = document.getElementById("statusText");
 const arOverlay = document.getElementById("arOverlay");
 const instructionText = document.getElementById("instructionText");
 const mobileBlocked = document.getElementById("mobileBlocked");
+const arToolbar = document.getElementById("arToolbar");
+const arClose = document.getElementById("arClose");
+const btnModeAR = document.getElementById("btnModeAR");
+const btnModeObject = document.getElementById("btnModeObject");
+const arShareQr = document.getElementById("arShareQr");
+const objectViewer = document.getElementById("objectViewer");
+const objectCanvas = document.getElementById("objectCanvas");
+const qrModal = document.getElementById("qrModal");
+const qrModalClose = document.getElementById("qrModalClose");
+const qrModalBox = document.getElementById("qrModalBox");
+const qrModalUrl = document.getElementById("qrModalUrl");
 
 const isMobileDevice =
   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -106,9 +117,17 @@ let canPlaceObject = true;
 let objectPlaced = false;
 let oneFingerDrag = null;
 let twoFingerPinch = null;
+let currentMode = "ar"; // "ar" | "object"
+let objRenderer = null;
+let objCamera = null;
+let objScene = null;
+let objAnimId = null;
+let objDrag = null;
+let objPinch = null;
 
 initPage();
 initThree();
+initToolbar();
 loadAssets();
 
 function hasQrAccess() {
@@ -505,6 +524,10 @@ async function startArSession() {
     document.body.classList.remove("is-ar-starting");
     document.body.classList.add("is-ar-presenting");
     arOverlay.hidden = false;
+    arToolbar.hidden = false;
+    currentMode = "ar";
+    btnModeAR.classList.add("mode-btn--active");
+    btnModeObject.classList.remove("mode-btn--active");
     instructionText.textContent = "Arahkan kamera ke bidang datar";
     canPlaceObject = true;
     objectPlaced = false;
@@ -563,6 +586,9 @@ function onSessionEnded() {
   objectPlaced = false;
   reticle.visible = false;
   arOverlay.hidden = true;
+  arToolbar.hidden = true;
+  if (currentMode === "object") hideObjectMode();
+  currentMode = "ar";
   document.body.classList.remove("is-ar-starting", "is-ar-presenting");
   desktopPanel.hidden = isMobileDevice;
   mobilePanel.hidden = !isMobileDevice;
@@ -788,6 +814,171 @@ function getShareablePageUrl() {
   const url = new URL(window.location.href);
   url.hash = "";
   return url.href;
+}
+
+function initToolbar() {
+  // Close button — akhiri XR session
+  arClose.addEventListener("click", () => {
+    if (xrSession) xrSession.end();
+    else onSessionEnded();
+  });
+
+  // Switch ke mode Objek
+  btnModeObject.addEventListener("click", () => {
+    if (currentMode === "object") return;
+    currentMode = "object";
+    btnModeObject.classList.add("mode-btn--active");
+    btnModeAR.classList.remove("mode-btn--active");
+    showObjectMode();
+  });
+
+  // Switch ke mode AR
+  btnModeAR.addEventListener("click", () => {
+    if (currentMode === "ar") return;
+    currentMode = "ar";
+    btnModeAR.classList.add("mode-btn--active");
+    btnModeObject.classList.remove("mode-btn--active");
+    hideObjectMode();
+  });
+
+  // Share QR
+  arShareQr.addEventListener("click", showQrModal);
+  qrModalClose.addEventListener("click", () => { qrModal.hidden = true; });
+  qrModal.addEventListener("click", (e) => {
+    if (e.target === qrModal) qrModal.hidden = true;
+  });
+}
+
+function showObjectMode() {
+  // Suspend AR hit-test & reticle
+  reticle.visible = false;
+  objectViewer.hidden = false;
+
+  // Buat renderer objek terpisah jika belum ada
+  if (!objRenderer) {
+    objRenderer = new THREE.WebGLRenderer({
+      canvas: objectCanvas,
+      antialias: true,
+      alpha: true,
+    });
+    objRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    objRenderer.setSize(window.innerWidth, window.innerHeight);
+
+    objCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 100);
+    objCamera.position.set(0, 0.3, 1.4);
+
+    objScene = new THREE.Scene();
+    objScene.background = new THREE.Color(0xf1f5f9);
+
+    const amb = new THREE.HemisphereLight(0xffffff, 0x6b7280, 1.4);
+    objScene.add(amb);
+    const dir = new THREE.DirectionalLight(0xffffff, 2.2);
+    dir.position.set(2, 5, 3);
+    objScene.add(dir);
+  }
+
+  // Kloning model untuk viewer
+  if (modelTemplate) {
+    if (objScene.__previewModel) objScene.remove(objScene.__previewModel);
+    const preview = modelTemplate.clone(true);
+    objScene.add(preview);
+    objScene.__previewModel = preview;
+  }
+
+  // Touch controls untuk object viewer
+  objectCanvas.addEventListener("touchstart", onObjTouchStart, { passive: false });
+  objectCanvas.addEventListener("touchmove", onObjTouchMove, { passive: false });
+  objectCanvas.addEventListener("touchend", onObjTouchEnd, { passive: false });
+
+  // Start render loop
+  const loop = () => {
+    objAnimId = requestAnimationFrame(loop);
+    objRenderer.render(objScene, objCamera);
+  };
+  loop();
+}
+
+function hideObjectMode() {
+  objectViewer.hidden = true;
+  cancelAnimationFrame(objAnimId);
+  objAnimId = null;
+  objectCanvas.removeEventListener("touchstart", onObjTouchStart);
+  objectCanvas.removeEventListener("touchmove", onObjTouchMove);
+  objectCanvas.removeEventListener("touchend", onObjTouchEnd);
+}
+
+function onObjTouchStart(e) {
+  e.preventDefault();
+  if (e.touches.length === 1) {
+    objDrag = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    objPinch = null;
+  }
+  if (e.touches.length === 2) {
+    objDrag = null;
+    objPinch = {
+      dist: Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY,
+      ),
+      camZ: objCamera.position.z,
+    };
+  }
+}
+
+function onObjTouchMove(e) {
+  e.preventDefault();
+  const model = objScene && objScene.__previewModel;
+  if (e.touches.length === 1 && objDrag && model) {
+    const dx = e.touches[0].clientX - objDrag.x;
+    const dy = e.touches[0].clientY - objDrag.y;
+    model.rotation.y += dx * 0.012;
+    model.rotation.x += dy * 0.012;
+    objDrag.x = e.touches[0].clientX;
+    objDrag.y = e.touches[0].clientY;
+  }
+  if (e.touches.length === 2 && objPinch) {
+    const d = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY,
+    );
+    objCamera.position.z = THREE.MathUtils.clamp(
+      objPinch.camZ * (objPinch.dist / d),
+      0.3,
+      5,
+    );
+  }
+}
+
+function onObjTouchEnd(e) {
+  e.preventDefault();
+  if (e.touches.length < 2) objPinch = null;
+  if (e.touches.length === 0) objDrag = null;
+}
+
+function showQrModal() {
+  qrModalBox.innerHTML = "";
+  const url = getShareablePageUrl();
+  qrModalUrl.textContent = url;
+
+  const waitQr = () => {
+    if (window.QRCode) {
+      new QRCode(qrModalBox, {
+        text: url,
+        width: 200,
+        height: 200,
+        colorDark: "#0d1117",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+    } else {
+      qrModalBox.textContent = "QR tidak tersedia.";
+    }
+  };
+
+  if (window.QRCode) waitQr();
+  else setTimeout(waitQr, 500);
+
+  qrModal.hidden = false;
 }
 
 function onWindowResize() {

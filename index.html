@@ -65,6 +65,89 @@
         </div>
       </section>
 
+      <!-- Toolbar AR (atas) -->
+      <div id="arToolbar" class="ar-toolbar" hidden>
+        <!-- Tombol close -->
+        <button id="arClose" class="ar-btn ar-btn-icon" aria-label="Tutup AR">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path
+              d="M5 5l10 10M15 5L5 15"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
+
+        <!-- Toggle AR / Objek -->
+        <div class="ar-mode-switch" id="arModeSwitch">
+          <button id="btnModeAR" class="mode-btn mode-btn--active">AR</button>
+          <button id="btnModeObject" class="mode-btn">Objek</button>
+        </div>
+
+        <!-- Tombol share QR -->
+        <button
+          id="arShareQr"
+          class="ar-btn ar-btn-icon"
+          aria-label="Bagikan QR"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect
+              x="1"
+              y="1"
+              width="7"
+              height="7"
+              rx="1"
+              stroke="currentColor"
+              stroke-width="1.8"
+            />
+            <rect
+              x="12"
+              y="1"
+              width="7"
+              height="7"
+              rx="1"
+              stroke="currentColor"
+              stroke-width="1.8"
+            />
+            <rect
+              x="1"
+              y="12"
+              width="7"
+              height="7"
+              rx="1"
+              stroke="currentColor"
+              stroke-width="1.8"
+            />
+            <rect x="3" y="3" width="3" height="3" fill="currentColor" />
+            <rect x="14" y="3" width="3" height="3" fill="currentColor" />
+            <rect x="3" y="14" width="3" height="3" fill="currentColor" />
+            <path
+              d="M14 12h2v2h-2zM16 14h2v2h-2zM14 16h2v2h-2z"
+              fill="currentColor"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mode Objek (non-AR viewer) -->
+      <div id="objectViewer" class="object-viewer" hidden>
+        <canvas id="objectCanvas"></canvas>
+        <p class="object-hint">Seret untuk memutar · Cubit untuk zoom</p>
+      </div>
+
+      <!-- Modal QR Share -->
+      <div id="qrModal" class="qr-modal" hidden>
+        <div class="qr-modal-inner">
+          <button id="qrModalClose" class="qr-modal-close" aria-label="Tutup">
+            ✕
+          </button>
+          <p class="qr-modal-title">Pindai untuk membuka</p>
+          <div id="qrModalBox" class="qr-modal-box"></div>
+          <p class="qr-modal-url" id="qrModalUrl"></p>
+        </div>
+      </div>
+
       <!-- Overlay AR -->
       <div id="arOverlay" class="ar-overlay" hidden>
         <p id="instructionText">Arahkan kamera ke permukaan datar.</p>

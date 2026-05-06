@@ -206,3 +206,144 @@ body.is-ar-presenting .mobile-block {
   -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
+
+/* ── AR Toolbar (atas) ── */
+.ar-toolbar {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 100px;
+  pointer-events: all;
+}
+
+.ar-btn {
+  border: none;
+  background: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+.ar-btn:active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Toggle AR / Objek */
+.ar-mode-switch {
+  display: flex;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 100px;
+  padding: 3px;
+  gap: 2px;
+}
+.mode-btn {
+  border: none;
+  background: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 5px 16px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+  font-family: inherit;
+}
+.mode-btn--active {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+/* ── Object Viewer (non-AR) ── */
+.object-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  background: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.object-viewer canvas {
+  position: static;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+.object-hint {
+  position: absolute;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 20px;
+  background: rgba(15, 23, 42, 0.6);
+  color: #fff;
+  border-radius: 100px;
+  font-size: 0.82rem;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ── QR Modal ── */
+.qr-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.qr-modal-inner {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 28px 24px 24px;
+  text-align: center;
+  max-width: 280px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+.qr-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  border: none;
+  background: none;
+  font-size: 1.1rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+}
+.qr-modal-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 16px;
+  color: #0f172a;
+}
+.qr-modal-box {
+  display: inline-flex;
+  margin-bottom: 14px;
+}
+.qr-modal-url {
+  font-size: 0.72rem;
+  color: #64748b;
+  word-break: break-all;
+  line-height: 1.4;
+}
