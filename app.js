@@ -596,6 +596,9 @@ function onSessionEnded() {
 }
 
 function render(timestamp, frame) {
+  // Saat mode Objek aktif, AR scene tidak perlu dirender (hemat GPU)
+  if (currentMode === "object") return;
+
   if (frame && canPlaceObject) {
     updateHitTest(frame);
   }
@@ -607,8 +610,11 @@ function updateHitTest(frame) {
   const session = renderer.xr.getSession();
 
   if (!hitTestSourceRequested) {
-    session.requestReferenceSpace("viewer").then((referenceSpace) => {
-      session.requestHitTestSource({ space: referenceSpace }).then((source) => {
+    // Set flag DULU agar request tidak dipanggil ulang setiap frame
+    hitTestSourceRequested = true;
+
+    session.requestReferenceSpace("viewer").then((viewerSpace) => {
+      session.requestHitTestSource({ space: viewerSpace }).then((source) => {
         hitTestSource = source;
       });
     });
@@ -621,8 +627,6 @@ function updateHitTest(frame) {
       },
       { once: true },
     );
-
-    hitTestSourceRequested = true;
   }
 
   if (!hitTestSource) {
@@ -637,6 +641,8 @@ function updateHitTest(frame) {
     const pose = hit.getPose(referenceSpace);
     reticle.visible = true;
     reticle.matrix.fromArray(pose.transform.matrix);
+    // Wajib: tandai matrixWorld agar Three.js meneruskan matrix ke GPU
+    reticle.matrixWorldNeedsUpdate = true;
     instructionText.textContent = "Tap layar untuk meletakkan objek";
   } else {
     reticle.visible = false;
@@ -882,6 +888,17 @@ function showObjectMode() {
     const dir = new THREE.DirectionalLight(0xffffff, 2.2);
     dir.position.set(2, 5, 3);
     objScene.add(dir);
+
+    // Pasang event listener HANYA sekali saat renderer dibuat
+    objectCanvas.addEventListener("touchstart", onObjTouchStart, {
+      passive: false,
+    });
+    objectCanvas.addEventListener("touchmove", onObjTouchMove, {
+      passive: false,
+    });
+    objectCanvas.addEventListener("touchend", onObjTouchEnd, {
+      passive: false,
+    });
   }
 
   // Kloning model untuk viewer
@@ -891,15 +908,6 @@ function showObjectMode() {
     objScene.add(preview);
     objScene.__previewModel = preview;
   }
-
-  // Touch controls untuk object viewer
-  objectCanvas.addEventListener("touchstart", onObjTouchStart, {
-    passive: false,
-  });
-  objectCanvas.addEventListener("touchmove", onObjTouchMove, {
-    passive: false,
-  });
-  objectCanvas.addEventListener("touchend", onObjTouchEnd, { passive: false });
 
   // Start render loop
   const loop = () => {
@@ -913,9 +921,7 @@ function hideObjectMode() {
   objectViewer.hidden = true;
   cancelAnimationFrame(objAnimId);
   objAnimId = null;
-  objectCanvas.removeEventListener("touchstart", onObjTouchStart);
-  objectCanvas.removeEventListener("touchmove", onObjTouchMove);
-  objectCanvas.removeEventListener("touchend", onObjTouchEnd);
+  // Event listener tidak dilepas di sini karena sudah dipasang sekali saja
 }
 
 function onObjTouchStart(e) {
