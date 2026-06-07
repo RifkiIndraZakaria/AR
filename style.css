@@ -372,3 +372,52 @@ body.is-ar-presenting .mobile-block {
   word-break: break-all;
   line-height: 1.4;
 }
+
+/* ── QR Toggle Button ── */
+.qr-toggle-btn {
+  display: inline-block;
+  margin: 8px 0 2px 0;
+  padding: 6px 18px;
+  border-radius: 100px;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    color 0.18s,
+    opacity 0.18s;
+  width: calc(100% - 16px);
+}
+
+.qr-toggle-btn--active {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.qr-toggle-btn--active:hover {
+  background: #fecaca;
+}
+
+.qr-toggle-btn--disabled {
+  background: #dcfce7;
+  color: #15803d;
+}
+.qr-toggle-btn--disabled:hover {
+  background: #bbf7d0;
+}
+
+/* QR item dimmed when disabled */
+.qr-item--disabled {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+  transition:
+    opacity 0.25s,
+    filter 0.25s;
+}
+.qr-item--disabled .qr-label::after {
+  content: " — Nonaktif";
+  color: #ef4444;
+  font-size: 0.78rem;
+  font-weight: 400;
+}

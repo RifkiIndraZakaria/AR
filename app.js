@@ -81,6 +81,7 @@ const statusText = document.getElementById("statusText");
 const arOverlay = document.getElementById("arOverlay");
 const instructionText = document.getElementById("instructionText");
 const mobileBlocked = document.getElementById("mobileBlocked");
+const mobileDisabled = document.getElementById("mobileDisabled");
 const arToolbar = document.getElementById("arToolbar");
 const arClose = document.getElementById("arClose");
 const btnModeAR = document.getElementById("btnModeAR");
@@ -142,6 +143,33 @@ function hasQrAccess() {
   return false;
 }
 
+// ── QR Enable / Disable helpers ──────────────────────────────────────────────
+const QR_DISABLED_KEY = "qr_disabled_ids"; // localStorage key
+
+function getDisabledIds() {
+  try {
+    return JSON.parse(localStorage.getItem(QR_DISABLED_KEY) || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+
+function setQrDisabled(targetId, disabled) {
+  const ids = getDisabledIds();
+  if (disabled) {
+    if (!ids.includes(targetId)) ids.push(targetId);
+  } else {
+    const idx = ids.indexOf(targetId);
+    if (idx !== -1) ids.splice(idx, 1);
+  }
+  localStorage.setItem(QR_DISABLED_KEY, JSON.stringify(ids));
+}
+
+function isQrDisabled(targetId) {
+  return getDisabledIds().includes(targetId);
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function cleanUrlParams() {
   try {
     const url = new URL(window.location.href);
@@ -155,21 +183,33 @@ function cleanUrlParams() {
 
 function initPage() {
   if (isMobileDevice) {
+    // Cek apakah QR ini sedang dinonaktifkan
+    if (isQrDisabled(selectedTarget.id)) {
+      mobilePanel.hidden = true;
+      desktopPanel.hidden = true;
+      if (mobileBlocked) mobileBlocked.hidden = true;
+      if (mobileDisabled) mobileDisabled.hidden = false;
+      return;
+    }
+
     if (hasQrAccess()) {
       sessionStorage.setItem("qr_scanned", "1");
       mobilePanel.hidden = false;
       desktopPanel.hidden = true;
       if (mobileBlocked) mobileBlocked.hidden = true;
+      if (mobileDisabled) mobileDisabled.hidden = true;
       cleanUrlParams();
     } else {
       mobilePanel.hidden = true;
       desktopPanel.hidden = true;
       if (mobileBlocked) mobileBlocked.hidden = false;
+      if (mobileDisabled) mobileDisabled.hidden = true;
     }
   } else {
     desktopPanel.hidden = false;
     mobilePanel.hidden = true;
     if (mobileBlocked) mobileBlocked.hidden = true;
+    if (mobileDisabled) mobileDisabled.hidden = true;
     generateQrWhenReady();
   }
 }
@@ -180,6 +220,7 @@ function generateQrWhenReady() {
     TARGETS.forEach((t) => {
       const item = document.createElement("div");
       item.className = "qr-item";
+      item.dataset.targetId = t.id;
 
       const qrBox = document.createElement("div");
       qrBox.className = "qr";
@@ -206,10 +247,24 @@ function generateQrWhenReady() {
       dl.className = "qr-download";
       dl.textContent = "Unduh PNG";
 
+      // ── Toggle button ─────────────────────────────────────────
+      const toggleBtn = document.createElement("button");
+      toggleBtn.className = "qr-toggle-btn";
+      const disabled = isQrDisabled(t.id);
+      updateToggleBtn(toggleBtn, item, disabled);
+
+      toggleBtn.addEventListener("click", () => {
+        const nowDisabled = isQrDisabled(t.id);
+        setQrDisabled(t.id, !nowDisabled);
+        updateToggleBtn(toggleBtn, item, !nowDisabled);
+      });
+      // ──────────────────────────────────────────────────────────
+
       item.appendChild(qrBox);
       item.appendChild(label);
       item.appendChild(openLink);
       item.appendChild(dl);
+      item.appendChild(toggleBtn);
       qrListContainer.appendChild(item);
 
       if (window.QRCode) {
@@ -258,6 +313,20 @@ function generateQrWhenReady() {
         "QR gagal dimuat. Pastikan koneksi internet.";
     }
   }, 10000);
+}
+
+function updateToggleBtn(btn, item, isDisabled) {
+  if (isDisabled) {
+    btn.textContent = "Aktifkan";
+    btn.classList.remove("qr-toggle-btn--active");
+    btn.classList.add("qr-toggle-btn--disabled");
+    item.classList.add("qr-item--disabled");
+  } else {
+    btn.textContent = "Nonaktifkan";
+    btn.classList.remove("qr-toggle-btn--disabled");
+    btn.classList.add("qr-toggle-btn--active");
+    item.classList.remove("qr-item--disabled");
+  }
 }
 
 function initThree() {
@@ -596,9 +665,6 @@ function onSessionEnded() {
 }
 
 function render(timestamp, frame) {
-  // Saat mode Objek aktif, AR scene tidak perlu dirender (hemat GPU)
-  if (currentMode === "object") return;
-
   if (frame && canPlaceObject) {
     updateHitTest(frame);
   }
@@ -610,11 +676,8 @@ function updateHitTest(frame) {
   const session = renderer.xr.getSession();
 
   if (!hitTestSourceRequested) {
-    // Set flag DULU agar request tidak dipanggil ulang setiap frame
-    hitTestSourceRequested = true;
-
-    session.requestReferenceSpace("viewer").then((viewerSpace) => {
-      session.requestHitTestSource({ space: viewerSpace }).then((source) => {
+    session.requestReferenceSpace("viewer").then((referenceSpace) => {
+      session.requestHitTestSource({ space: referenceSpace }).then((source) => {
         hitTestSource = source;
       });
     });
@@ -627,6 +690,8 @@ function updateHitTest(frame) {
       },
       { once: true },
     );
+
+    hitTestSourceRequested = true;
   }
 
   if (!hitTestSource) {
@@ -641,8 +706,6 @@ function updateHitTest(frame) {
     const pose = hit.getPose(referenceSpace);
     reticle.visible = true;
     reticle.matrix.fromArray(pose.transform.matrix);
-    // Wajib: tandai matrixWorld agar Three.js meneruskan matrix ke GPU
-    reticle.matrixWorldNeedsUpdate = true;
     instructionText.textContent = "Tap layar untuk meletakkan objek";
   } else {
     reticle.visible = false;
@@ -888,17 +951,6 @@ function showObjectMode() {
     const dir = new THREE.DirectionalLight(0xffffff, 2.2);
     dir.position.set(2, 5, 3);
     objScene.add(dir);
-
-    // Pasang event listener HANYA sekali saat renderer dibuat
-    objectCanvas.addEventListener("touchstart", onObjTouchStart, {
-      passive: false,
-    });
-    objectCanvas.addEventListener("touchmove", onObjTouchMove, {
-      passive: false,
-    });
-    objectCanvas.addEventListener("touchend", onObjTouchEnd, {
-      passive: false,
-    });
   }
 
   // Kloning model untuk viewer
@@ -908,6 +960,15 @@ function showObjectMode() {
     objScene.add(preview);
     objScene.__previewModel = preview;
   }
+
+  // Touch controls untuk object viewer
+  objectCanvas.addEventListener("touchstart", onObjTouchStart, {
+    passive: false,
+  });
+  objectCanvas.addEventListener("touchmove", onObjTouchMove, {
+    passive: false,
+  });
+  objectCanvas.addEventListener("touchend", onObjTouchEnd, { passive: false });
 
   // Start render loop
   const loop = () => {
@@ -921,7 +982,9 @@ function hideObjectMode() {
   objectViewer.hidden = true;
   cancelAnimationFrame(objAnimId);
   objAnimId = null;
-  // Event listener tidak dilepas di sini karena sudah dipasang sekali saja
+  objectCanvas.removeEventListener("touchstart", onObjTouchStart);
+  objectCanvas.removeEventListener("touchmove", onObjTouchMove);
+  objectCanvas.removeEventListener("touchend", onObjTouchEnd);
 }
 
 function onObjTouchStart(e) {
