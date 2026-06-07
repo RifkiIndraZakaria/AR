@@ -126,10 +126,69 @@ let objAnimId = null;
 let objDrag = null;
 let objPinch = null;
 
-initPage();
-initThree();
-initToolbar();
-loadAssets();
+// ── Supabase config ───────────────────────────────────────────────────────────
+const SUPABASE_URL = "https://myjohnbftkjfyngclfuj.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15am9obmJmdGtqZnluZ2NsZnVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3OTA1MjcsImV4cCI6MjA5NjM2NjUyN30.7PVwWYoEIRQz9G5NPrAFJOvpmKnsoA14ZV6SHiYmHh0";
+
+async function sbFetch(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+      ...(options.headers || {}),
+    },
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Supabase error ${res.status}: ${err}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+// Cache status lokal agar tidak fetch berulang saat render QR
+let qrStatusCache = {}; // { targetId: boolean }
+
+async function loadQrStatusFromSupabase() {
+  try {
+    const rows = await sbFetch("qr_status?select=target_id,is_disabled");
+    rows.forEach((r) => {
+      qrStatusCache[r.target_id] = r.is_disabled;
+    });
+  } catch (e) {
+    console.warn(
+      "Gagal load status QR dari Supabase, fallback ke semua aktif.",
+      e,
+    );
+  }
+}
+
+async function setQrDisabled(targetId, disabled) {
+  qrStatusCache[targetId] = disabled;
+  try {
+    await sbFetch(`qr_status?target_id=eq.${encodeURIComponent(targetId)}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        is_disabled: disabled,
+        updated_at: new Date().toISOString(),
+      }),
+    });
+  } catch (e) {
+    console.error("Gagal update status QR:", e);
+    // Rollback cache kalau gagal
+    qrStatusCache[targetId] = !disabled;
+    throw e;
+  }
+}
+
+function isQrDisabled(targetId) {
+  return qrStatusCache[targetId] === true;
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 function hasQrAccess() {
   try {
@@ -143,45 +202,20 @@ function hasQrAccess() {
   return false;
 }
 
-// ── QR Enable / Disable helpers ──────────────────────────────────────────────
-const QR_DISABLED_KEY = "qr_disabled_ids"; // localStorage key
-
-function getDisabledIds() {
-  try {
-    return JSON.parse(localStorage.getItem(QR_DISABLED_KEY) || "[]");
-  } catch (e) {
-    return [];
-  }
-}
-
-function setQrDisabled(targetId, disabled) {
-  const ids = getDisabledIds();
-  if (disabled) {
-    if (!ids.includes(targetId)) ids.push(targetId);
-  } else {
-    const idx = ids.indexOf(targetId);
-    if (idx !== -1) ids.splice(idx, 1);
-  }
-  localStorage.setItem(QR_DISABLED_KEY, JSON.stringify(ids));
-}
-
-function isQrDisabled(targetId) {
-  return getDisabledIds().includes(targetId);
-}
-// ─────────────────────────────────────────────────────────────────────────────
-
 function cleanUrlParams() {
   try {
     const url = new URL(window.location.href);
     url.searchParams.delete("via_qr");
-    // keep target param so selection still works
     window.history.replaceState({}, "", url.pathname + url.search + url.hash);
   } catch (e) {
     // ignore
   }
 }
 
-function initPage() {
+async function initPage() {
+  // Selalu fetch status dari Supabase dulu
+  await loadQrStatusFromSupabase();
+
   if (isMobileDevice) {
     // Cek apakah QR ini sedang dinonaktifkan
     if (isQrDisabled(selectedTarget.id)) {
@@ -213,6 +247,11 @@ function initPage() {
     generateQrWhenReady();
   }
 }
+
+initPage();
+initThree();
+initToolbar();
+loadAssets();
 
 function generateQrWhenReady() {
   const makeAll = () => {
@@ -253,10 +292,20 @@ function generateQrWhenReady() {
       const disabled = isQrDisabled(t.id);
       updateToggleBtn(toggleBtn, item, disabled);
 
-      toggleBtn.addEventListener("click", () => {
+      toggleBtn.addEventListener("click", async () => {
         const nowDisabled = isQrDisabled(t.id);
-        setQrDisabled(t.id, !nowDisabled);
-        updateToggleBtn(toggleBtn, item, !nowDisabled);
+        toggleBtn.disabled = true;
+        toggleBtn.textContent = "Menyimpan...";
+        try {
+          await setQrDisabled(t.id, !nowDisabled);
+          updateToggleBtn(toggleBtn, item, !nowDisabled);
+        } catch (e) {
+          // Rollback sudah ditangani di setQrDisabled
+          updateToggleBtn(toggleBtn, item, nowDisabled);
+          alert("Gagal menyimpan perubahan. Cek koneksi internet.");
+        } finally {
+          toggleBtn.disabled = false;
+        }
       });
       // ──────────────────────────────────────────────────────────
 
