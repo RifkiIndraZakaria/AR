@@ -781,6 +781,21 @@ function placeObjectAtReticle() {
   playAudio();
 }
 
+function tryTapObject(clientX, clientY) {
+  if (!placedModel) return;
+
+  const ndcX = (clientX / window.innerWidth) * 2 - 1;
+  const ndcY = -(clientY / window.innerHeight) * 2 + 1;
+
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera({ x: ndcX, y: ndcY }, camera);
+
+  const hits = raycaster.intersectObject(placedModel, true);
+  if (hits.length > 0) {
+    playAudio();
+  }
+}
+
 function playAudio() {
   if (audioBuffer) {
     if (sound && sound.isPlaying) {
@@ -840,6 +855,8 @@ function onTouchStart(event) {
     oneFingerDrag = {
       x: touch.clientX,
       y: touch.clientY,
+      _clientX: touch.clientX,
+      _clientY: touch.clientY,
       startedAt: performance.now(),
       moved: false,
     };
@@ -899,14 +916,18 @@ function onTouchEnd(event) {
 
   event.preventDefault();
 
-  if (
+  const isTap =
     event.touches.length === 0 &&
-    canPlaceObject &&
     oneFingerDrag &&
     !oneFingerDrag.moved &&
-    performance.now() - oneFingerDrag.startedAt < 450
-  ) {
-    placeObjectAtReticle();
+    performance.now() - oneFingerDrag.startedAt < 450;
+
+  if (isTap) {
+    if (canPlaceObject) {
+      placeObjectAtReticle();
+    } else if (objectPlaced && placedModel) {
+      tryTapObject(oneFingerDrag._clientX, oneFingerDrag._clientY);
+    }
   }
 
   if (event.touches.length < 2) {
